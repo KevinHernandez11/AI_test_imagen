@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargar Imagen para Análisis</title>
+</head>
+<body>
+
+    <h1>Analizar Imagen con OpenAI</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div>
+            <label for="imageFile">Seleccionar archivo de imagen:</label>
+            <input type="file" id="imageFile" name="file" required>
+        </div>
+        <br>
+        <div>
+            <label for="prompt">Prompt de análisis:</label>
+            <input type="text" id="prompt" name="prompt" value="Describe esta imagen traducida al español">
+        </div>
+        <br>
+        <button type="submit">Analizar Imagen</button>
+    </form>
+
+    <div id="analysisResultContainer" style="margin-top: 20px;">
+        <h2>Resultado del Análisis:</h2>
+        <pre><code id="analysisResult" style="text-align: justify;">{{ analysis }}</code></pre>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('uploadForm');
+            const analysisResultContainer = document.getElementById('analysisResultContainer');
+            const analysisResultElement = document.getElementById('analysisResult');
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Evita la recarga de la página
+
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/analyzeimage/', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        alert(errorData.detail || 'Error al analizar la imagen.');
+                        analysisResultElement.textContent = '';
+                        analysisResultContainer.style.display = 'block';
+                        return;
+                    }
+
+                    const data = await response.json();
+                    analysisResultElement.textContent = data.analysis; // Accede a data.analysis
+                    analysisResultContainer.style.display = 'block';
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al analizar la imagen.');
+                    analysisResultElement.textContent = '';
+                    analysisResultContainer.style.display = 'block';
+                }
+            });
+
+            // Oculta el contenedor de resultados al cargar la página inicialmente
+            analysisResultContainer.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
